@@ -1,0 +1,40 @@
+grafana:
+  sidecar:
+    datasources:
+      url: http://promstack-kube-prometheus-prometheus.prom.svc.cluster.local:9090/
+
+prometheus:
+  additionalServiceMonitors:
+    - name: servicemonitor-dummy-app1
+      additionalLabels:
+        my-custom-label: my-custom-value
+      selector:
+        matchLabels:
+          app: dummy-exporter
+      namespaceSelector:
+        matchNames:
+          - prom
+      endpoints:
+        - port: http
+          path: /metrics
+    - name: servicemonitor-dummy-app2
+      additionalLabels:
+        my-custom-label: my-custom-value
+      selector:
+        matchLabels:
+          app: dummy-exporter
+      namespaceSelector:
+        matchNames:
+          - default
+      endpoints:
+        - port: http
+          path: /metrics
+  # additionalPodMonitors:
+  #   - name: dummy-app
+  #     additionalLabels:
+  #       my-custom-label: my-custom-value
+  #     selector:
+  #       app: dummy-exporter
+  #     podMetricsEndpoints:
+  #       - port: http
+  #         path: /metrics
