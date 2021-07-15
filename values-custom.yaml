@@ -1,23 +1,30 @@
+additionalPrometheusRulesMap:
+  myrulename:
+    groups:
+    - name: myrecordingrules
+      rules:
+      - record: go_goroutines
+        expr: go_goroutines{job="dummy-exporter"}>1
+    - name: myalertingrules
+      rules:
+      - alert: Dummy metric above the limit
+        expr: go_goroutines{job="dummy-exporter"}>1
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          message: '{{ $labels.instance }} in troubles.'
+          runbook_url: https://stackoverflow.com/
+
 grafana:
   sidecar:
     datasources:
-      url: http://promstack-kube-prometheus-prometheus.prom.svc.cluster.local:9090/
+      #url: "http://monitoring-kube-prometheus-prometheus.monitoring.svc.cluster.local:9090"
+      url: "http://monitoring-kube-prometheus-prometheus:9090"
 
 prometheus:
   additionalServiceMonitors:
-    - name: servicemonitor-dummy-app1
-      additionalLabels:
-        my-custom-label: my-custom-value
-      selector:
-        matchLabels:
-          app: dummy-exporter
-      namespaceSelector:
-        matchNames:
-          - prom
-      endpoints:
-        - port: http
-          path: /metrics
-    - name: servicemonitor-dummy-app2
+    - name: servicemonitor-dummy-app
       additionalLabels:
         my-custom-label: my-custom-value
       selector:
@@ -35,6 +42,14 @@ prometheus:
   #       my-custom-label: my-custom-value
   #     selector:
   #       app: dummy-exporter
+  #     namespaceSelector:
+  #       matchNames:
+  #         - default
+  #     endpoints:
+  #       - port: http
+  #         path: /metrics
   #     podMetricsEndpoints:
   #       - port: http
   #         path: /metrics
+
+

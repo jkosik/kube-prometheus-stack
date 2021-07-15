@@ -1,10 +1,20 @@
 # kube-prometheus-stack & Prometheus for k8s workloads
-This projects deploys prefabrikated `kube-prometheus-stack` into the k8s cluster. `custom-values.yaml` modifies default settings, e.g. Grafana scraping metrics from Prometheus via SVC url or adding custom ServiceMonitors.
+This projects deploys prefabrikated `kube-prometheus-stack` into the k8s cluster. [values-custom.yaml](values-custom.yaml) modifies default settings, e.g. Grafana scraping metrics from Prometheus directly via SVC url, custom ServiceMonitors, custom alertin rules,...
 
 ## Deployment
-1. Mirror https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack to `kube-prometheus-stack/` directory.
-2. Create custom `values-custom.yaml` to override defaults.
-3. From `kube-prometheus-stack/` run `helm dependency update` which downloads Helm dependency packages to `kube-prometheus-stack/charts`
-4. From root: `helm install -f values-custom.yaml prom-k8s kube-prometheus-stack/`
+1. Create custom [values-custom.yaml](values-custom.yaml) to override default [Helm Chart values](https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-prometheus-stack/values.yaml).
+2. Add to your deployment pipeline:
+```
+kubectl create ns monitoring
 
-Default Grafana credentials: admin/prom-operator
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+helm search repo prometheus-community/kube-prometheus-stack --versions | head
+
+helm upgrade --install -f values-custom.yaml monitoring prometheus-community/kube-prometheus-stack --version 16.13.0 -n monitoring
+```
+
+## Additional info
+- Default Grafana credentials: admin/prom-operator
+- `kubectl deploy -f prometheus-dummy-exporter.yaml -n YOURNAMESPACE` and update `additionalServiceMonitors` in [values-custom.yaml](values-custom.yaml) to start scraping own metrics.
+- updating grafana.sidecar.datasources.url require Grafana Pod restart
